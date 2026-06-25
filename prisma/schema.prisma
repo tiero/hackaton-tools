@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+
+model Participant {
+  id String @id @default(cuid())
+  name String
+  email String
+  skills String
+  interests String?
+  contact String?
+  createdAt DateTime @default(now())
+  ideas Idea[] @relation("IdeaCreator")
+  teamMember TeamMember?
+  comments Comment[]
+}
+
+model Idea {
+  id String @id @default(cuid())
+  title String
+  problem String
+  proposedSolution String
+  neededSkills String
+  maxTeamSize Int @default(4)
+  status String @default("open")
+  creatorParticipantId String
+  creator Participant @relation("IdeaCreator", fields: [creatorParticipantId], references: [id])
+  createdAt DateTime @default(now())
+  members TeamMember[]
+  comments Comment[]
+}
+
+model TeamMember {
+  id String @id @default(cuid())
+  ideaId String
+  participantId String @unique
+  role String
+  motivation String?
+  createdAt DateTime @default(now())
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id String @id @default(cuid())
+  ideaId String
+  participantId String
+  body String
+  createdAt DateTime @default(now())
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+}
+
+model AppSetting {
+  key String @id
+  value String
+  updatedAt DateTime @updatedAt
+}
