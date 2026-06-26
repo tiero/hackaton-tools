@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-bitcoin-500 px-4 py-2 font-semibold text-white transition hover:bg-bitcoin-600 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800 transition hover:bg-slate-50;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-sm;
+  }
+  .input {
+    @apply w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-bitcoin-500 focus:ring-2 focus:ring-bitcoin-100;
+  }
+  .label {
+    @apply block text-sm font-medium text-slate-700;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .chip {
+    @apply inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-sm text-slate-700;
+  }
+}
