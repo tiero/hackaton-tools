@@ -2,31 +2,31 @@
   "name": "hackathon-team-tools",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "css": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify",
+    "css:watch": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
+    "build": "pnpm run css",
+    "dev": "pnpm run css && wrangler dev",
+    "deploy": "pnpm run css && wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:apply:local": "wrangler d1 execute hackathon --local --file=./migrations/0001_init.sql",
+    "db:seed:local": "wrangler d1 execute hackathon --local --file=./seed.sql",
+    "db:reset:local": "wrangler d1 execute hackathon --local --command=\"PRAGMA writable_schema=1; DELETE FROM sqlite_master; PRAGMA writable_schema=0; VACUUM;\" && pnpm run db:apply:local",
+    "db:apply:remote": "wrangler d1 execute hackathon --remote --file=./migrations/0001_init.sql",
+    "db:seed:remote": "wrangler d1 execute hackathon --remote --file=./seed.sql"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "next": "^14.2.32",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.14"
   },
   "devDependencies": {
-    "@types/node": "^20.19.1",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.32",
-    "postcss": "^8.5.6",
-    "prisma": "^5.22.0",
+    "@cloudflare/workers-types": "^4.20241218.0",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.20.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.7.2",
+    "wrangler": "^4.105.0"
   },
-  "prisma": { "seed": "tsx prisma/seed.ts" }
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "workerd"]
+  }
 }

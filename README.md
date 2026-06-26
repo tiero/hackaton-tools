@@ -1,35 +1,83 @@
-# Hackathon Team Tools
+# Plan ₿ Hackathon — team formation app
 
-A small Next.js app for forming up to 8 hackathon teams without full user accounts. Participants register a lightweight profile, propose ideas, join or leave one team, comment, and organizers can freeze formation or export CSVs.
+A tiny team-formation app for the **Plan ₿ Summer School Hackathon** (29–30 June
+2026, Lugano). Participants can **pitch an idea** to lead a team *and* signal
+they're **open to join** other ideas — so nobody is stuck choosing between
+leading and joining before kickoff.
 
-## Setup
+Built to be **trivial to deploy on Cloudflare**: it's a single
+[Hono](https://hono.dev) Worker rendering server-side HTML, backed by
+[Cloudflare D1](https://developers.cloudflare.com/d1/) (serverless SQLite) via
+[Drizzle ORM](https://orm.drizzle.team). No Next.js, no build server, no native
+DB engine — `wrangler deploy` and you're live.
+
+## Stack
+
+- **Cloudflare Workers** + **Hono** (`hono/jsx` server-side rendering)
+- **D1** (SQLite) + **Drizzle ORM**
+- **Tailwind CSS** compiled to a static asset
+- **TypeScript**, **pnpm**, **Wrangler**
+
+## Features
+
+- Idea board (`/`) with team size, needed skills, status (open/full/frozen) and
+  an "interested" count.
+- People directory (`/people`) split into *open to join*, *committed*, and
+  *not looking*.
+- Register / edit profile (`/join`, `/me`) — identity is a cookie-stored
+  participant id, no passwords.
+- Pitch an idea (`/ideas/new`) — capped at 8 teams; pitcher becomes idea owner.
+- Idea detail (`/ideas/:id`) — commit to a team (one team max), leave, express
+  soft *interest* in many ideas, comment.
+- Program page (`/about`) — schedule, judging, prizes, mentors.
+- Admin (`/admin`, password via `ADMIN_PASSWORD`) — freeze/unfreeze formation,
+  delete ideas, remove members, export teams & participants as CSV.
+
+## Local development
 
 ```bash
-npm install
-cp .env.example .env
-npx prisma migrate dev
-npx prisma db seed
-npm run dev
+pnpm install
+cp .dev.vars.example .dev.vars      # set ADMIN_PASSWORD for local
+
+pnpm run db:apply:local             # create tables in the local D1
+pnpm run db:seed:local              # optional demo data
+
+pnpm run dev                        # builds CSS + `wrangler dev` on :8787
 ```
 
-Open http://localhost:3000.
+Open http://localhost:8787. The local D1 lives under `.wrangler/` (gitignored).
+Reset it with `pnpm run db:reset:local`.
 
-## Admin password
+## Deploy to Cloudflare
 
-Set `ADMIN_PASSWORD` in `.env`, then visit `/admin`. The password unlocks freeze/unfreeze, removal, delete, and CSV export controls.
-
-## Reset SQLite
+See **[DEPLOY.md](./DEPLOY.md)**. Short version:
 
 ```bash
-rm -f prisma/dev.db prisma/dev.db-journal
-npx prisma migrate dev
-npx prisma db seed
+wrangler d1 create hackathon           # paste database_id into wrangler.toml
+pnpm run db:apply:remote               # apply schema to remote D1
+wrangler secret put ADMIN_PASSWORD     # set the admin password
+pnpm run deploy                        # build CSS + wrangler deploy
 ```
 
-## Export teams
+Or connect the repo with **Workers Builds** for auto-deploy on push (DEPLOY.md).
 
-Visit `/admin`, enter the admin password, then use **Export teams CSV** or **Export participants CSV**.
+## Intended limitations
 
-## Limitations
+This is a lightweight tool for ~30 people over two days, not production software:
 
-This app is intentionally lightweight for a small internal hackathon. It stores a participant ID in browser local storage, does not use password accounts, has simple admin access, and is not intended for sensitive personal data or public multi-tenant use.
+- No real authentication — a participant is whoever holds the `pid` cookie.
+- Admin is a single shared password.
+- No email, no realtime, no payments. Non-custodial is a *judging* gate, not
+  enforced by the app.
+
+## Scripts
+
+| Script | What it does |
+| --- | --- |
+| `pnpm run dev` | Build CSS, run `wrangler dev` (local D1) |
+| `pnpm run build` | Compile Tailwind to `public/styles.css` |
+| `pnpm run deploy` | Build CSS, `wrangler deploy` |
+| `pnpm run typecheck` | `tsc --noEmit` |
+| `pnpm run db:apply:local` / `:remote` | Apply `migrations/0001_init.sql` |
+| `pnpm run db:seed:local` / `:remote` | Apply `seed.sql` |
+| `pnpm run db:reset:local` | Drop + recreate the local D1 |

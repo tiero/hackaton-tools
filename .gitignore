@@ -1,5 +1,7 @@
 node_modules
-.next
-.env
-prisma/dev.db
-prisma/dev.db-journal
+.wrangler
+.dev.vars
+public/styles.css
+dist
+*.log
+.DS_Store
