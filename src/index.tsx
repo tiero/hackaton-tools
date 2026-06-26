@@ -3,9 +3,9 @@ import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import { eq, and, desc } from 'drizzle-orm';
 import type { Env } from '../worker-configuration';
 import { getDb, type DB } from './db';
-import { participant, idea, teamMember, interest, comment } from './db/schema';
+import { participant, idea, teamMember, comment } from './db/schema';
 import { isFrozen, setFrozen, refreshIdeaStatus, refreshAllIdeas } from './lib/state';
-import { required, optional, email, intRange, boolean, newId, ValidationError } from './lib/validation';
+import { required, optional, intRange, boolean, newId, ValidationError } from './lib/validation';
 import type { Participant } from './lib/types';
 import { EVENT } from './lib/event';
 import { Layout, render } from './views/layout';
@@ -47,18 +47,13 @@ app.get('/', async (c) => {
   const db = getDb(c.env.DB);
   const me = await getMe(c, db);
   const ideas = await db.query.idea.findMany({
-    with: { members: { with: { participant: true } }, interested: true },
+    with: { members: { with: { participant: true } } },
     orderBy: [desc(idea.createdAt)],
   });
-  const people = await db.query.participant.findMany({
-    with: { teamMember: true },
-    orderBy: [desc(participant.createdAt)],
-  });
-  const openPeople = people.filter((p) => p.openToJoin && !p.teamMember).slice(0, 8);
   return c.html(
     render(
       <Layout title="Board" active="board" me={me} flash={flashFrom(c.req.query())}>
-        <Home ideas={ideas} openPeople={openPeople} />
+        <Home ideas={ideas} />
       </Layout>,
     ),
   );
@@ -70,8 +65,8 @@ app.get('/people', async (c) => {
   const db = getDb(c.env.DB);
   const me = await getMe(c, db);
   const people = await db.query.participant.findMany({
-    with: { teamMember: { with: { idea: true } }, interests: { with: { idea: true } } },
-    orderBy: [desc(participant.openToJoin), desc(participant.createdAt)],
+    with: { teamMember: { with: { idea: true } } },
+    orderBy: [desc(participant.createdAt)],
   });
   return c.html(
     render(
@@ -134,12 +129,8 @@ app.post('/profile', async (c) => {
   try {
     const data = {
       name: required(form.get('name'), 'Name', 120),
-      email: email(form.get('email')),
       skills: required(form.get('skills'), 'Skills', 1000),
-      interests: optional(form.get('interests'), 1000),
       contact: optional(form.get('contact'), 1000),
-      lookingFor: optional(form.get('lookingFor'), 1000),
-      openToJoin: boolean(form.get('openToJoin')),
     };
     const existingId = getCookie(c, PID_COOKIE);
     if (existingId) {
@@ -191,6 +182,7 @@ app.post('/ideas', async (c) => {
       proposedSolution: required(form.get('proposedSolution'), 'Proposed solution', 2000),
       neededSkills: required(form.get('neededSkills'), 'Needed skills', 1000),
       maxTeamSize: intRange(form.get('maxTeamSize'), 'Max team size', 2, 6, EVENT.defaultTeamSize),
+      joinable: boolean(form.get('joinable')),
       creatorParticipantId: me.id,
     });
     // The pitcher is auto-added as the idea owner / first member.
@@ -217,17 +209,16 @@ app.get('/ideas/:id', async (c) => {
     where: eq(idea.id, id),
     with: {
       members: { with: { participant: true } },
-      interested: { with: { participant: true } },
       comments: { with: { participant: true }, orderBy: [desc(comment.createdAt)] },
     },
   });
   if (!row) return c.notFound();
   const onThisTeam = !!me && row.members.some((m) => m.participantId === me.id);
-  const isInterested = !!me && row.interested.some((i) => i.participantId === me.id);
+  const isOwner = !!me && row.creatorParticipantId === me.id;
   return c.html(
     render(
       <Layout title={row.title} active="board" me={me} flash={flashFrom(c.req.query())}>
-        <IdeaDetail idea={row} me={me} onThisTeam={onThisTeam} isInterested={isInterested} />
+        <IdeaDetail idea={row} me={me} onThisTeam={onThisTeam} isOwner={isOwner} />
       </Layout>,
     ),
   );
@@ -241,6 +232,7 @@ app.post('/ideas/:id/join', async (c) => {
   if (await isFrozen(db)) return back(c, `/ideas/${id}`, { error: 'frozen' });
   const row = await db.query.idea.findFirst({ where: eq(idea.id, id), with: { members: true } });
   if (!row) return c.notFound();
+  if (!row.joinable) return back(c, `/ideas/${id}`, { error: 'closed' });
   if (row.members.length >= row.maxTeamSize) return back(c, `/ideas/${id}`, { error: 'full' });
   const form = await c.req.formData();
   try {
@@ -255,8 +247,6 @@ app.post('/ideas/:id/join', async (c) => {
     if (e instanceof ValidationError) return back(c, `/ideas/${id}`, { error: e.message });
     return back(c, `/ideas/${id}`, { error: 'already-on-team' });
   }
-  // Committing clears your soft interest in this idea — it's a hard commit now.
-  await db.delete(interest).where(and(eq(interest.ideaId, id), eq(interest.participantId, me.id)));
   await refreshIdeaStatus(db, id);
   return c.redirect(`/ideas/${id}`);
 });
@@ -272,20 +262,53 @@ app.post('/ideas/:id/leave', async (c) => {
   return c.redirect(`/ideas/${id}`);
 });
 
-app.post('/ideas/:id/interest', async (c) => {
+// Owner adds an already-matched teammate manually (just a record — no login for them).
+app.post('/ideas/:id/members', async (c) => {
   const db = getDb(c.env.DB);
   const me = await getMe(c, db);
   const id = c.req.param('id');
   if (!me) return c.redirect('/join');
-  const existing = await db.query.interest.findFirst({
-    where: and(eq(interest.ideaId, id), eq(interest.participantId, me.id)),
-  });
-  if (existing) {
-    await db.delete(interest).where(eq(interest.id, existing.id));
-  } else {
-    await db.insert(interest).values({ id: newId(), ideaId: id, participantId: me.id });
+  const row = await db.query.idea.findFirst({ where: eq(idea.id, id), with: { members: true } });
+  if (!row) return c.notFound();
+  if (row.creatorParticipantId !== me.id) return back(c, `/ideas/${id}`, { error: 'not-owner' });
+  if (await isFrozen(db)) return back(c, `/ideas/${id}`, { error: 'frozen' });
+  if (row.members.length >= row.maxTeamSize) return back(c, `/ideas/${id}`, { error: 'full' });
+  const form = await c.req.formData();
+  try {
+    const pid = newId();
+    await db.insert(participant).values({
+      id: pid,
+      name: required(form.get('name'), 'Name', 120),
+      skills: required(form.get('skills'), 'Skills', 1000),
+      contact: optional(form.get('contact'), 1000),
+    });
+    await db.insert(teamMember).values({
+      id: newId(),
+      ideaId: id,
+      participantId: pid,
+      role: required(form.get('role'), 'Role', 120),
+      motivation: optional(form.get('motivation'), 500),
+    });
+  } catch (e) {
+    const msg = e instanceof ValidationError ? e.message : 'Could not add the teammate.';
+    return back(c, `/ideas/${id}`, { error: msg });
   }
-  return c.redirect(`/ideas/${id}`);
+  await refreshIdeaStatus(db, id);
+  return back(c, `/ideas/${id}`, { ok: 'Teammate added.' });
+});
+
+// Owner toggles whether the team accepts new members.
+app.post('/ideas/:id/settings', async (c) => {
+  const db = getDb(c.env.DB);
+  const me = await getMe(c, db);
+  const id = c.req.param('id');
+  if (!me) return c.redirect('/join');
+  const row = await db.query.idea.findFirst({ where: eq(idea.id, id) });
+  if (!row) return c.notFound();
+  if (row.creatorParticipantId !== me.id) return back(c, `/ideas/${id}`, { error: 'not-owner' });
+  const form = await c.req.formData();
+  await db.update(idea).set({ joinable: boolean(form.get('joinable')) }).where(eq(idea.id, id));
+  return back(c, `/ideas/${id}`, { ok: 'Team settings updated.' });
 });
 
 app.post('/ideas/:id/comment', async (c) => {
@@ -324,13 +347,12 @@ app.get('/admin', async (c) => {
   const ideas = await db.query.idea.findMany({
     with: {
       members: { with: { participant: true } },
-      interested: { with: { participant: true } },
       comments: { with: { participant: true } },
     },
     orderBy: [desc(idea.createdAt)],
   });
   const participants = await db.query.participant.findMany({
-    with: { teamMember: { with: { idea: true } }, interests: { with: { idea: true } } },
+    with: { teamMember: { with: { idea: true } } },
     orderBy: [desc(participant.createdAt)],
   });
   const frozen = await isFrozen(db);
@@ -389,12 +411,12 @@ app.get('/admin/export/teams.csv', async (c) => {
   if (!isAdmin(c)) return c.text('Unauthorized', 401);
   const ideas = await db.query.idea.findMany({ with: { members: { with: { participant: true } } } });
   const rows: unknown[][] = [
-    ['idea title', 'problem', 'needed skills', 'max team size', 'member name', 'member email', 'member skills', 'member contact', 'team role', 'motivation'],
+    ['idea title', 'problem', 'needed skills', 'max team size', 'member name', 'member skills', 'member contact', 'team role', 'motivation'],
   ];
   for (const i of ideas) {
-    if (i.members.length === 0) rows.push([i.title, i.problem, i.neededSkills, i.maxTeamSize, '', '', '', '', '', '']);
+    if (i.members.length === 0) rows.push([i.title, i.problem, i.neededSkills, i.maxTeamSize, '', '', '', '', '']);
     for (const m of i.members) {
-      rows.push([i.title, i.problem, i.neededSkills, i.maxTeamSize, m.participant.name, m.participant.email, m.participant.skills, m.participant.contact ?? '', m.role, m.motivation ?? '']);
+      rows.push([i.title, i.problem, i.neededSkills, i.maxTeamSize, m.participant.name, m.participant.skills, m.participant.contact ?? '', m.role, m.motivation ?? '']);
     }
   }
   return c.body(csv(rows), 200, {
@@ -407,18 +429,11 @@ app.get('/admin/export/participants.csv', async (c) => {
   const db = getDb(c.env.DB);
   if (!isAdmin(c)) return c.text('Unauthorized', 401);
   const people = await db.query.participant.findMany({
-    with: { teamMember: { with: { idea: true } }, interests: { with: { idea: true } } },
+    with: { teamMember: { with: { idea: true } } },
   });
-  const rows: unknown[][] = [
-    ['name', 'email', 'skills', 'interests', 'contact', 'open to join', 'looking for', 'team title', 'interested in'],
-  ];
+  const rows: unknown[][] = [['name', 'skills', 'contact', 'team title']];
   for (const p of people) {
-    rows.push([
-      p.name, p.email, p.skills, p.interests ?? '', p.contact ?? '',
-      p.openToJoin ? 'yes' : 'no', p.lookingFor ?? '',
-      p.teamMember?.idea.title ?? '',
-      p.interests.map((i) => i.idea.title).join('; '),
-    ]);
+    rows.push([p.name, p.skills, p.contact ?? '', p.teamMember?.idea.title ?? '']);
   }
   return c.body(csv(rows), 200, {
     'content-type': 'text/csv; charset=utf-8',

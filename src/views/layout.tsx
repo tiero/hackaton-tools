@@ -27,7 +27,7 @@ export const Layout: FC<LayoutProps> = ({ children, title, me, active, flash }) 
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{title ? `${title} · ${EVENT.name}` : EVENT.name}</title>
-        <meta name="description" content={EVENT.themeBlurb} />
+        <meta name="description" content={EVENT.theme} />
         <link rel="stylesheet" href="/styles.css" />
         <link
           rel="icon"

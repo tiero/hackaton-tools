@@ -2,12 +2,12 @@
 -- Apply locally:  pnpm run db:seed:local   (run AFTER db:apply:local)
 -- Safe to re-run: uses fixed ids with INSERT OR IGNORE.
 
-INSERT OR IGNORE INTO Participant (id, name, email, skills, interests, contact, openToJoin, lookingFor) VALUES
-  ('p_satoshi', 'Satoshi N.',  'satoshi@example.com', 'Protocol, C++, cryptography', 'Privacy, sound money', 'nostr: npub1...', 0, NULL),
-  ('p_lina',    'Lina Ortiz',  'lina@example.com',    'React, mobile, design',        'Onboarding, UX',     'tg: @lina',      1, 'A team building a non-custodial wallet'),
-  ('p_mateo',   'Mateo Rossi', 'mateo@example.com',   'Rust, Lightning, backend',     'L2, payments',       'tg: @mateo',     1, 'Lightning infra to hack on'),
-  ('p_aria',    'Aria Khan',   'aria@example.com',    'Go, infra, security',          'Self-custody, nodes','aria@example.com',1, 'Anything non-custodial'),
-  ('p_noah',    'Noah Weber',  'noah@example.com',    'Design, product, research',    'Education',          'tg: @noah',      1, 'A team that needs a designer');
+INSERT OR IGNORE INTO Participant (id, name, skills, contact) VALUES
+  ('p_satoshi', 'Satoshi N.',  'Protocol, C++, cryptography', 'nostr: npub1...'),
+  ('p_lina',    'Lina Ortiz',  'React, mobile, design',        'tg: @lina'),
+  ('p_mateo',   'Mateo Rossi', 'Rust, Lightning, backend',     'tg: @mateo'),
+  ('p_aria',    'Aria Khan',   'Go, infra, security',          'aria@example.com'),
+  ('p_noah',    'Noah Weber',  'Design, product, research',    'tg: @noah');
 
 INSERT OR IGNORE INTO Idea (id, title, problem, proposedSolution, neededSkills, maxTeamSize, status, creatorParticipantId) VALUES
   ('i_seedkit',
@@ -23,14 +23,20 @@ INSERT OR IGNORE INTO Idea (id, title, problem, proposedSolution, neededSkills, 
    'Lightning, mobile, backend',
    4, 'open', 'p_mateo');
 
+-- A pre-formed team (already matched offline): public, but not accepting new members.
+INSERT OR IGNORE INTO Idea (id, title, problem, proposedSolution, neededSkills, maxTeamSize, status, joinable, creatorParticipantId) VALUES
+  ('i_coldcard',
+   'NodeGuard — watchtower for home nodes',
+   'Self-hosted Lightning nodes go offline and lose funds to outdated channel states.',
+   'A lightweight watchtower + alerting setup that anyone can run alongside their node.',
+   'Rust, infra, networking',
+   3, 'open', 0, 'p_aria');
+
 INSERT OR IGNORE INTO TeamMember (id, ideaId, participantId, role, motivation) VALUES
   ('tm_satoshi', 'i_seedkit',   'p_satoshi', 'Idea owner', 'Proposed this idea.'),
-  ('tm_mateo',   'i_lnonboard', 'p_mateo',   'Idea owner', 'Proposed this idea.');
-
-INSERT OR IGNORE INTO Interest (id, ideaId, participantId) VALUES
-  ('int_lina_seed',  'i_seedkit',   'p_lina'),
-  ('int_aria_seed',  'i_seedkit',   'p_aria'),
-  ('int_noah_ln',    'i_lnonboard', 'p_noah');
+  ('tm_mateo',   'i_lnonboard', 'p_mateo',   'Idea owner', 'Proposed this idea.'),
+  ('tm_aria',    'i_coldcard',  'p_aria',    'Idea owner', 'Proposed this idea.'),
+  ('tm_noah',    'i_coldcard',  'p_noah',    'Infra',      'Already on board.');
 
 INSERT OR IGNORE INTO Comment (id, ideaId, participantId, body) VALUES
   ('cm_1', 'i_seedkit', 'p_lina', 'Love this — I can take the mobile UX. What''s the target OS?');
