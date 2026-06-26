@@ -261,6 +261,9 @@ app.post('/ideas/:id/leave', async (c) => {
   const me = await getMe(c, db);
   const id = c.req.param('id');
   if (!me) return c.redirect('/join');
+  const owned = await db.query.idea.findFirst({ where: eq(idea.id, id) });
+  // The owner can't leave their own idea — they delete it instead.
+  if (owned?.creatorParticipantId === me.id) return back(c, `/ideas/${id}`, { error: 'owner-cant-leave' });
   if (await isFrozen(db)) return back(c, `/ideas/${id}`, { error: 'frozen' });
   await db.delete(teamMember).where(and(eq(teamMember.ideaId, id), eq(teamMember.participantId, me.id)));
   await refreshIdeaStatus(db, id);
@@ -311,6 +314,7 @@ app.post('/ideas/:id/edit', async (c) => {
   const row = await db.query.idea.findFirst({ where: eq(idea.id, id), with: { members: true } });
   if (!row) return c.notFound();
   if (row.creatorParticipantId !== me.id) return back(c, `/ideas/${id}`, { error: 'not-owner' });
+  if (await isFrozen(db)) return back(c, `/ideas/${id}`, { error: 'frozen' });
   const form = await c.req.formData();
   try {
     const maxTeamSize = intRange(form.get('maxTeamSize'), 'Team size', 2, 6, row.maxTeamSize);
@@ -345,6 +349,7 @@ app.post('/ideas/:id/delete', async (c) => {
   const row = await db.query.idea.findFirst({ where: eq(idea.id, id) });
   if (!row) return c.notFound();
   if (row.creatorParticipantId !== me.id) return back(c, `/ideas/${id}`, { error: 'not-owner' });
+  if (await isFrozen(db)) return back(c, `/ideas/${id}`, { error: 'frozen' });
   await db.delete(idea).where(eq(idea.id, id));
   return back(c, '/', { ok: 'Idea deleted.' });
 });

@@ -16,6 +16,7 @@ const errorText: Record<string, string> = {
   'need-profile': 'Register a profile first, then you can pitch or join.',
   closed: 'This team is already formed and not accepting new members.',
   'not-owner': 'Only the idea owner can do that.',
+  'owner-cant-leave': 'As the idea owner you can’t leave — delete the idea instead (Owner tools).',
   notfound: 'That item could not be found.',
 };
 
@@ -344,11 +345,21 @@ export const IdeaDetail: FC<{ idea: IdeaDetailData; me?: Participant | null; onT
 
       <div class="grid gap-4 md:grid-cols-2">
         {onThisTeam ? (
-          <form method="post" action={`/ideas/${idea.id}/leave`} class="card space-y-3">
-            <h2 class="text-xl font-bold">You're on this team</h2>
-            <p class="text-sm text-slate-600">You can leave unless formation is frozen.</p>
-            <button class="btn-secondary">Leave this team</button>
-          </form>
+          isOwner ? (
+            <div class="card">
+              <h2 class="text-xl font-bold">You own this idea</h2>
+              <p class="mt-2 text-sm text-slate-600">
+                Use <b>Owner tools</b> above to edit or delete it. Owners can’t leave their own team — delete the
+                idea if you want to step away.
+              </p>
+            </div>
+          ) : (
+            <form method="post" action={`/ideas/${idea.id}/leave`} class="card space-y-3">
+              <h2 class="text-xl font-bold">You're on this team</h2>
+              <p class="text-sm text-slate-600">You can leave unless formation is frozen.</p>
+              <button class="btn-secondary">Leave this team</button>
+            </form>
+          )
         ) : !idea.joinable ? (
           <div class="card">
             <h2 class="text-xl font-bold">Team already formed</h2>
