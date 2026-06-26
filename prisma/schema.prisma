@@ -13,10 +13,14 @@ model Participant {
   skills String
   interests String?
   contact String?
+  // Soft signal: open to join other teams even if you also pitched an idea.
+  openToJoin Boolean @default(true)
+  lookingFor String?
   createdAt DateTime @default(now())
   ideas Idea[] @relation("IdeaCreator")
   teamMember TeamMember?
   comments Comment[]
+  interests_ Interest[]
 }
 
 model Idea {
@@ -32,8 +36,10 @@ model Idea {
   createdAt DateTime @default(now())
   members TeamMember[]
   comments Comment[]
+  interested Interest[]
 }
 
+// Hard commitment: a participant can be a committed member of at most one team.
 model TeamMember {
   id String @id @default(cuid())
   ideaId String
@@ -43,6 +49,19 @@ model TeamMember {
   createdAt DateTime @default(now())
   idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+}
+
+// Soft signal: "I'm open to joining this idea." A participant can express interest
+// in many ideas without committing. This is how people pitch one idea but stay
+// open to others, and how owners discover who wants in.
+model Interest {
+  id String @id @default(cuid())
+  ideaId String
+  participantId String
+  createdAt DateTime @default(now())
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  @@unique([ideaId, participantId])
 }
 
 model Comment {

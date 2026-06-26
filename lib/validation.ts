@@ -14,6 +14,10 @@ export function email(value: FormDataEntryValue | null) {
   if (!/^\S+@\S+\.\S+$/.test(text)) throw new Error('Enter a valid email address.');
   return text;
 }
+export function boolean(value: FormDataEntryValue | null) {
+  const text = String(value ?? '').trim().toLowerCase();
+  return text === 'true' || text === 'on' || text === '1' || text === 'yes';
+}
 export function intRange(value: FormDataEntryValue | null, label: string, min: number, max: number, fallback: number) {
   const n = Number(value || fallback);
   if (!Number.isInteger(n) || n < min || n > max) throw new Error(`${label} must be between ${min} and ${max}.`);
