@@ -1,6 +1,6 @@
 import type { FC } from 'hono/jsx';
 import { StatusBadge } from './layout';
-import { EVENT, JUDGING, MENTORS, PRIZES, SCHEDULE } from '../lib/event';
+import { EVENT, JUDGING, JUDGES, MENTORS, PRIZES, SCHEDULE, TEAM_RULES } from '../lib/event';
 import type {
   IdeaCardData,
   IdeaDetailData,
@@ -11,7 +11,7 @@ import type {
 const errorText: Record<string, string> = {
   frozen: 'Team formation is frozen by the organizers.',
   full: 'This team is already full.',
-  'already-on-team': 'You’re already committed to a team. Leave it first to join another.',
+  'already-on-team': "You're already committed to a team. Leave it first to join another.",
   max: `The maximum of ${EVENT.maxTeams} teams has been reached. Join an existing idea instead.`,
   'need-profile': 'Register a profile first, then you can pitch or join.',
   notfound: 'That item could not be found.',
@@ -32,8 +32,6 @@ export const Home: FC<{ ideas: IdeaCardData[]; openPeople: Participant[] }> = ({
         {EVENT.dates} · Lugano
       </p>
       <h1 class="mt-2 text-3xl font-bold sm:text-4xl">{EVENT.name}</h1>
-      <p class="mt-3 max-w-2xl text-orange-50">{EVENT.themeBlurb}</p>
-      <p class="mt-3 max-w-2xl rounded-xl bg-black/15 p-3 text-sm text-amber-50">⚠ {EVENT.hardGate}</p>
       <div class="mt-6 flex flex-wrap gap-3">
         <a class="btn bg-white text-bitcoin-700 hover:bg-orange-50" href="/join">Register / Edit My Profile</a>
         <a class="btn bg-slate-900 hover:bg-slate-800" href="/ideas/new">Pitch an Idea</a>
@@ -85,7 +83,7 @@ export const Home: FC<{ ideas: IdeaCardData[]; openPeople: Participant[] }> = ({
         <a class="text-sm font-semibold text-bitcoin-700 hover:underline" href="/people">See everyone →</a>
       </div>
       <p class="mt-1 text-sm text-slate-600">
-        People who registered, aren’t committed to a team yet, and are open to join. Recruit them.
+        People who registered, aren't committed to a team yet, and are open to join. Recruit them.
       </p>
       <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {openPeople.map((p) => (
@@ -95,7 +93,7 @@ export const Home: FC<{ ideas: IdeaCardData[]; openPeople: Participant[] }> = ({
             {p.lookingFor && <p class="mt-2 text-sm text-slate-500">“{p.lookingFor}”</p>}
           </div>
         ))}
-        {openPeople.length === 0 && <p class="card text-slate-600">Nobody’s in the open pool yet.</p>}
+        {openPeople.length === 0 && <p class="card text-slate-600">Nobody's in the open pool yet.</p>}
       </div>
     </section>
   </div>
@@ -178,15 +176,15 @@ export const ParticipantForm: FC<{ me?: Participant | null; heading: string; cta
     </div>
     <div>
       <label class="label" for="skills">Skills</label>
-      <input class="input mt-1" id="skills" name="skills" required value={me?.skills ?? ‘’} placeholder="Rust, React, Lightning, design…" />
+      <input class="input mt-1" id="skills" name="skills" required value={me?.skills ?? ''} placeholder="Rust, React, Lightning, design..." />
     </div>
     <div>
       <label class="label" for="contact">Contact</label>
-      <input class="input mt-1" id="contact" name="contact" value={me?.contact ?? ‘’} placeholder="Telegram / Nostr / email" />
+      <input class="input mt-1" id="contact" name="contact" value={me?.contact ?? ''} placeholder="Telegram / Nostr / email" />
     </div>
     <label class="flex items-center gap-2 text-sm">
       <input type="checkbox" name="openToJoin" checked={me ? me.openToJoin : true} />
-      <span>I’m open to join other teams (show me in the open pool)</span>
+      <span>I'm open to join other teams (show me in the open pool)</span>
     </label>
     <button class="btn-primary">{cta}</button>
   </form>
@@ -244,7 +242,7 @@ export const NewIdea: FC<{ me?: Participant | null; atMax: boolean }> = ({ me, a
   return (
     <form method="post" action="/ideas" class="card max-w-2xl space-y-4">
       <h1 class="text-2xl font-bold">Pitch an idea</h1>
-      <p class="text-sm text-slate-600">You’ll be added as the idea owner and first team member.</p>
+      <p class="text-sm text-slate-600">You'll be added as the idea owner and first team member.</p>
       <div>
         <label class="label" for="title">Title</label>
         <input class="input mt-1" id="title" name="title" required placeholder="Non-custodial X for Y" />
@@ -255,11 +253,11 @@ export const NewIdea: FC<{ me?: Participant | null; atMax: boolean }> = ({ me, a
       </div>
       <div>
         <label class="label" for="proposedSolution">Proposed solution</label>
-        <textarea class="input mt-1" id="proposedSolution" name="proposedSolution" required rows={3} placeholder="What you’ll build in 30 hours. Keep keys with the user." />
+        <textarea class="input mt-1" id="proposedSolution" name="proposedSolution" required rows={3} placeholder="What you'll build in 30 hours. Keep keys with the user." />
       </div>
       <div>
         <label class="label" for="neededSkills">Needed skills</label>
-        <input class="input mt-1" id="neededSkills" name="neededSkills" required placeholder="Rust, Lightning, mobile, design…" />
+        <input class="input mt-1" id="neededSkills" name="neededSkills" required placeholder="Rust, Lightning, mobile, design..." />
       </div>
       <div>
         <label class="label" for="maxTeamSize">Max team size (2–6)</label>
@@ -316,7 +314,7 @@ export const IdeaDetail: FC<{ idea: IdeaDetailData; me?: Participant | null; onT
           {me && !onThisTeam && (
             <form method="post" action={`/ideas/${idea.id}/interest`} class="mt-4">
               <button class={isInterested ? 'btn-secondary' : 'btn'}>
-                {isInterested ? 'Remove my interest' : 'I’m open to join this'}
+                {isInterested ? 'Remove my interest' : "I'm open to join this"}
               </button>
               <p class="mt-2 text-xs text-slate-500">Low-commitment signal. You can be interested in several ideas at once.</p>
             </form>
@@ -347,7 +345,7 @@ export const IdeaDetail: FC<{ idea: IdeaDetailData; me?: Participant | null; onT
           </form>
         ) : (
           <form method="post" action={`/ideas/${idea.id}/leave`} class="card space-y-3">
-            <h2 class="text-xl font-bold">You’re on this team</h2>
+            <h2 class="text-xl font-bold">You're on this team</h2>
             <p class="text-sm text-slate-600">You can leave unless formation is frozen.</p>
             <button class="btn-secondary">Leave this team</button>
           </form>
@@ -357,7 +355,7 @@ export const IdeaDetail: FC<{ idea: IdeaDetailData; me?: Participant | null; onT
           <h2 class="text-xl font-bold">Add a comment</h2>
           {me ? (
             <>
-              <textarea class="input" name="body" maxlength={500} required placeholder="Ask a question or offer to help…" />
+              <textarea class="input" name="body" maxlength={500} required placeholder="Ask a question or offer to help..." />
               <button class="btn">Comment</button>
             </>
           ) : (
@@ -390,8 +388,6 @@ export const About: FC = () => (
     <div>
       <h1 class="text-3xl font-bold">{EVENT.name}</h1>
       <p class="mt-2 text-slate-600">{EVENT.format} · {EVENT.location}</p>
-      <p class="mt-4 max-w-3xl text-slate-700">{EVENT.themeBlurb}</p>
-      <p class="mt-3 max-w-3xl rounded-xl border border-bitcoin-100 bg-bitcoin-50 p-3 text-sm text-bitcoin-700">⚠ {EVENT.hardGate}</p>
     </div>
 
     <section>
@@ -440,8 +436,22 @@ export const About: FC = () => (
         <div>
           <h2 class="text-2xl font-bold">Mentors</h2>
           <div class="mt-3 flex flex-wrap gap-2">
-            {MENTORS.map((m) => <span class="chip">{m}</span>)}
+            {MENTORS.map((m) => (
+              <span class="chip">{m.name} <span class="ml-1 text-xs text-slate-500">({m.role})</span></span>
+            ))}
           </div>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold">Judges</h2>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {JUDGES.map((j) => <span class="chip">{j}</span>)}
+          </div>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold">Team Rules</h2>
+          <ul class="mt-3 space-y-1 text-sm text-slate-700">
+            {TEAM_RULES.map((r) => <li class="flex gap-2"><span class="text-bitcoin-600">·</span>{r}</li>)}
+          </ul>
         </div>
       </div>
     </section>
