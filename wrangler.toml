@@ -1,0 +1,18 @@
+# Cloudflare Pages + D1 configuration for the Plan ₿ hackathon team app.
+# Deploy mechanism: Cloudflare Pages (via @cloudflare/next-on-pages).
+# See DEPLOY.md for the full step-by-step.
+
+name = "hackaton-tools"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# next-on-pages writes the build here.
+pages_build_output_dir = ".vercel/output/static"
+
+# D1 (serverless SQLite) binding. Create the DB with:
+#   wrangler d1 create hackathon
+# then paste the returned database_id below (and into the Pages project settings).
+[[d1_databases]]
+binding = "DB"
+database_name = "hackathon"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"

@@ -2,17 +2,25 @@
 
 A small Next.js app for forming up to 8 hackathon teams without full user accounts. Participants register a lightweight profile, propose ideas, join or leave one team, comment, and organizers can freeze formation or export CSVs.
 
+Async team formation for the **Plan ₿ Summer School Hackathon** (29–30 June 2026,
+Franklin University, Lugano). Participants register, **pitch an idea**, and can
+**both lead a team and signal openness to join others** before kickoff.
+
 ## Setup
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env
-npx prisma migrate dev
-npx prisma db seed
-npm run dev
+pnpm exec prisma migrate dev
+pnpm exec prisma db seed
+pnpm dev
 ```
 
 Open http://localhost:3000.
+
+## Deploy
+
+See **[DEPLOY.md](./DEPLOY.md)** for the Cloudflare Pages + D1 recipe.
 
 ## Admin password
 
@@ -22,8 +30,8 @@ Set `ADMIN_PASSWORD` in `.env`, then visit `/admin`. The password unlocks freeze
 
 ```bash
 rm -f prisma/dev.db prisma/dev.db-journal
-npx prisma migrate dev
-npx prisma db seed
+pnpm exec prisma migrate dev
+pnpm exec prisma db seed
 ```
 
 ## Export teams
