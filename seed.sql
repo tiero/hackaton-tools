@@ -37,6 +37,3 @@ INSERT OR IGNORE INTO TeamMember (id, ideaId, participantId, role, motivation) V
   ('tm_mateo',   'i_lnonboard', 'p_mateo',   'Idea owner', 'Proposed this idea.'),
   ('tm_aria',    'i_coldcard',  'p_aria',    'Idea owner', 'Proposed this idea.'),
   ('tm_noah',    'i_coldcard',  'p_noah',    'Infra',      'Already on board.');
-
-INSERT OR IGNORE INTO Comment (id, ideaId, participantId, body) VALUES
-  ('cm_1', 'i_seedkit', 'p_lina', 'Love this — I can take the mobile UX. What''s the target OS?');

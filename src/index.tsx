@@ -3,7 +3,7 @@ import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import { eq, and, desc } from 'drizzle-orm';
 import type { Env } from '../worker-configuration';
 import { getDb, type DB } from './db';
-import { participant, idea, teamMember, comment } from './db/schema';
+import { participant, idea, teamMember } from './db/schema';
 import { isFrozen, setFrozen, refreshIdeaStatus, refreshAllIdeas } from './lib/state';
 import { required, optional, intRange, boolean, newId, ValidationError } from './lib/validation';
 import { adminToken, checkPassword, checkAdminCookie } from './lib/auth';
@@ -214,7 +214,6 @@ app.get('/ideas/:id', async (c) => {
     where: eq(idea.id, id),
     with: {
       members: { with: { participant: true } },
-      comments: { with: { participant: true }, orderBy: [desc(comment.createdAt)] },
     },
   });
   if (!row) return c.notFound();
@@ -340,7 +339,7 @@ app.post('/ideas/:id/edit', async (c) => {
   }
 });
 
-// Owner deletes the idea (cascades to members + comments).
+// Owner deletes the idea (cascades to team members).
 app.post('/ideas/:id/delete', async (c) => {
   const db = getDb(c.env.DB);
   const me = await getMe(c, db);
@@ -352,26 +351,6 @@ app.post('/ideas/:id/delete', async (c) => {
   if (await isFrozen(db)) return back(c, `/ideas/${id}`, { error: 'frozen' });
   await db.delete(idea).where(eq(idea.id, id));
   return back(c, '/', { ok: 'Idea deleted.' });
-});
-
-app.post('/ideas/:id/comment', async (c) => {
-  const db = getDb(c.env.DB);
-  const me = await getMe(c, db);
-  const id = c.req.param('id');
-  if (!me) return c.redirect('/join');
-  const form = await c.req.formData();
-  try {
-    await db.insert(comment).values({
-      id: newId(),
-      ideaId: id,
-      participantId: me.id,
-      body: required(form.get('body'), 'Comment', 500),
-    });
-  } catch (e) {
-    const msg = e instanceof ValidationError ? e.message : 'Could not post comment.';
-    return back(c, `/ideas/${id}`, { error: msg });
-  }
-  return c.redirect(`/ideas/${id}`);
 });
 
 // ---------------- Admin ----------------
@@ -390,7 +369,6 @@ app.get('/admin', async (c) => {
   const ideas = await db.query.idea.findMany({
     with: {
       members: { with: { participant: true } },
-      comments: { with: { participant: true } },
     },
     orderBy: [desc(idea.createdAt)],
   });

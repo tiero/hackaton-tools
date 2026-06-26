@@ -34,14 +34,6 @@ CREATE TABLE IF NOT EXISTS TeamMember (
 -- One participant can be a committed member of at most one team.
 CREATE UNIQUE INDEX IF NOT EXISTS TeamMember_participantId_unique ON TeamMember(participantId);
 
-CREATE TABLE IF NOT EXISTS Comment (
-  id             TEXT PRIMARY KEY,
-  ideaId         TEXT NOT NULL REFERENCES Idea(id) ON DELETE CASCADE,
-  participantId  TEXT NOT NULL REFERENCES Participant(id) ON DELETE CASCADE,
-  body           TEXT NOT NULL,
-  createdAt      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
-
 CREATE TABLE IF NOT EXISTS AppSetting (
   key    TEXT PRIMARY KEY,
   value  TEXT NOT NULL

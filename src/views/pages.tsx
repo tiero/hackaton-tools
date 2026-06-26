@@ -343,7 +343,7 @@ export const IdeaDetail: FC<{ idea: IdeaDetailData; me?: Participant | null; onT
 
       {isOwner && <OwnerPanel idea={idea} isFull={isFull} />}
 
-      <div class="grid gap-4 md:grid-cols-2">
+      <div class="max-w-xl">
         {onThisTeam ? (
           isOwner ? (
             <div class="card">
@@ -386,33 +386,7 @@ export const IdeaDetail: FC<{ idea: IdeaDetailData; me?: Participant | null; onT
             )}
           </form>
         )}
-
-        <form method="post" action={`/ideas/${idea.id}/comment`} class="card space-y-3">
-          <h2 class="text-xl font-bold">Add a comment</h2>
-          {me ? (
-            <>
-              <textarea class="input" name="body" maxlength={500} required placeholder="Ask a question or offer to help..." />
-              <button class="btn">Comment</button>
-            </>
-          ) : (
-            <a class="btn" href="/join">Register to comment</a>
-          )}
-        </form>
       </div>
-
-      <section class="card">
-        <h2 class="text-xl font-bold">Discussion</h2>
-        <div class="mt-3 space-y-3">
-          {idea.comments.map((c) => (
-            <p class="border-t pt-3">
-              <b>{c.participant.name}</b> <span class="text-sm text-slate-500">{new Date(c.createdAt).toLocaleString()}</span>
-              <br />
-              {c.body}
-            </p>
-          ))}
-          {idea.comments.length === 0 && <p class="text-slate-500">No comments yet.</p>}
-        </div>
-      </section>
     </div>
   );
 };

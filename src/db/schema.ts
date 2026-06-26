@@ -51,18 +51,6 @@ export const teamMember = sqliteTable(
   }),
 );
 
-export const comment = sqliteTable('Comment', {
-  id: id(),
-  ideaId: text('ideaId')
-    .notNull()
-    .references(() => idea.id, { onDelete: 'cascade' }),
-  participantId: text('participantId')
-    .notNull()
-    .references(() => participant.id, { onDelete: 'cascade' }),
-  body: text('body').notNull(),
-  createdAt: createdAt(),
-});
-
 export const appSetting = sqliteTable('AppSetting', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
@@ -76,7 +64,6 @@ export const participantRelations = relations(participant, ({ many, one }) => ({
     fields: [participant.id],
     references: [teamMember.participantId],
   }),
-  comments: many(comment),
 }));
 
 export const ideaRelations = relations(idea, ({ many, one }) => ({
@@ -85,7 +72,6 @@ export const ideaRelations = relations(idea, ({ many, one }) => ({
     references: [participant.id],
   }),
   members: many(teamMember),
-  comments: many(comment),
 }));
 
 export const teamMemberRelations = relations(teamMember, ({ one }) => ({
@@ -96,22 +82,12 @@ export const teamMemberRelations = relations(teamMember, ({ one }) => ({
   }),
 }));
 
-export const commentRelations = relations(comment, ({ one }) => ({
-  idea: one(idea, { fields: [comment.ideaId], references: [idea.id] }),
-  participant: one(participant, {
-    fields: [comment.participantId],
-    references: [participant.id],
-  }),
-}));
-
 export const schema = {
   participant,
   idea,
   teamMember,
-  comment,
   appSetting,
   participantRelations,
   ideaRelations,
   teamMemberRelations,
-  commentRelations,
 };
