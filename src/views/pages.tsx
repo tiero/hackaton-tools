@@ -177,24 +177,12 @@ export const ParticipantForm: FC<{ me?: Participant | null; heading: string; cta
       <input class="input mt-1" id="name" name="name" required value={me?.name ?? ''} placeholder="Satoshi N." />
     </div>
     <div>
-      <label class="label" for="email">Email</label>
-      <input class="input mt-1" id="email" name="email" type="email" required value={me?.email ?? ''} placeholder="you@example.com" />
-    </div>
-    <div>
       <label class="label" for="skills">Skills</label>
-      <input class="input mt-1" id="skills" name="skills" required value={me?.skills ?? ''} placeholder="Rust, React, Lightning, design…" />
-    </div>
-    <div>
-      <label class="label" for="interests">Interests</label>
-      <input class="input mt-1" id="interests" name="interests" value={me?.interests ?? ''} placeholder="Privacy, payments, education…" />
+      <input class="input mt-1" id="skills" name="skills" required value={me?.skills ?? ‘’} placeholder="Rust, React, Lightning, design…" />
     </div>
     <div>
       <label class="label" for="contact">Contact</label>
-      <input class="input mt-1" id="contact" name="contact" value={me?.contact ?? ''} placeholder="Telegram / Nostr / email" />
-    </div>
-    <div>
-      <label class="label" for="lookingFor">What you’re looking for</label>
-      <input class="input mt-1" id="lookingFor" name="lookingFor" value={me?.lookingFor ?? ''} placeholder="A team building a non-custodial wallet" />
+      <input class="input mt-1" id="contact" name="contact" value={me?.contact ?? ‘’} placeholder="Telegram / Nostr / email" />
     </div>
     <label class="flex items-center gap-2 text-sm">
       <input type="checkbox" name="openToJoin" checked={me ? me.openToJoin : true} />
@@ -217,9 +205,7 @@ export const Me: FC<{ me: Participant; team: { idea: { id: string; title: string
       <p class="mt-1 text-sm text-slate-500">Participant ID: <code>{me.id}</code></p>
       <dl class="mt-4 grid grid-cols-3 gap-y-2 text-sm">
         <dt class="text-slate-500">Name</dt><dd class="col-span-2">{me.name}</dd>
-        <dt class="text-slate-500">Email</dt><dd class="col-span-2">{me.email}</dd>
         <dt class="text-slate-500">Skills</dt><dd class="col-span-2">{me.skills}</dd>
-        {me.interests && (<><dt class="text-slate-500">Interests</dt><dd class="col-span-2">{me.interests}</dd></>)}
         {me.contact && (<><dt class="text-slate-500">Contact</dt><dd class="col-span-2">{me.contact}</dd></>)}
         <dt class="text-slate-500">Open to join</dt><dd class="col-span-2">{me.openToJoin ? 'Yes' : 'No'}</dd>
         <dt class="text-slate-500">Team</dt>
