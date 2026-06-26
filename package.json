@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "db:apply:local": "wrangler d1 execute hackathon --local --file=./migrations/0001_init.sql",
     "db:seed:local": "wrangler d1 execute hackathon --local --file=./seed.sql",
-    "db:reset:local": "wrangler d1 execute hackathon --local --command=\"PRAGMA writable_schema=1; DELETE FROM sqlite_master; PRAGMA writable_schema=0; VACUUM;\" && pnpm run db:apply:local",
+    "db:reset:local": "wrangler d1 execute hackathon --local --command=\"DROP TABLE IF EXISTS Comment; DROP TABLE IF EXISTS Interest; DROP TABLE IF EXISTS TeamMember; DROP TABLE IF EXISTS Idea; DROP TABLE IF EXISTS Participant; DROP TABLE IF EXISTS AppSetting;\" && pnpm run db:apply:local",
     "db:apply:remote": "wrangler d1 execute hackathon --remote --file=./migrations/0001_init.sql",
     "db:seed:remote": "wrangler d1 execute hackathon --remote --file=./seed.sql"
   },
