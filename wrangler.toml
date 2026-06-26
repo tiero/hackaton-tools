@@ -1,0 +1,24 @@
+# Cloudflare Workers + D1 config for the Plan ₿ hackathon team app.
+# Deploy:  pnpm run deploy   (builds Tailwind, then `wrangler deploy`)
+# See DEPLOY.md for the full step-by-step.
+
+name = "hackaton-tools"
+main = "src/index.tsx"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Static assets (compiled Tailwind CSS lives in ./public/styles.css).
+# Existing files are served directly; everything else falls through to the Worker.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# D1 (serverless SQLite). Create with:  wrangler d1 create hackathon
+# then paste the returned database_id below (needed for --remote / deploy).
+[[d1_databases]]
+binding = "DB"
+database_name = "hackathon"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+# ADMIN_PASSWORD is provided as a secret (prod) or via .dev.vars (local).
+# Prod:  wrangler secret put ADMIN_PASSWORD
