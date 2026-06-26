@@ -19,12 +19,27 @@ export const JUDGING = [
   { criterion: 'Teamwork', weight: '10%', note: 'How the team worked together over 30 hours (mentor observation).' },
 ];
 
-export const MENTORS = ['Tiero', 'Efrat Fenigson', 'Wiz', 'OrangeSurf', 'Rahim Taghizadegan'];
+export const MENTORS: { name: string; role: string }[] = [
+  { name: 'Raheem', role: 'Legal' },
+  { name: 'Mir', role: 'Communication' },
+  { name: 'Orange', role: 'Tech' },
+  { name: 'JW', role: 'Finance' },
+  { name: 'Kevin', role: 'Tech' },
+];
+
+export const JUDGES = ['Tiero', 'Giacomo', 'Anna', 'Efrat'];
+
+export const TEAM_RULES = [
+  'Minimum 3 students per team',
+  'At least one technical and one business profile required',
+  'Maximum 4 students per team',
+  'No recycling of existing projects',
+];
 
 export const PRIZES = [
-  { place: '1st', prize: 'Cyphertank access (1 slot)' },
-  { place: '2nd', prize: 'BitBox hardware wallet' },
-  { place: '3rd', prize: 'Ark Labs support and business advisory' },
+  { place: '1st', prize: 'Cyphertank' },
+  { place: '2nd', prize: 'Jade Plus + Arkade Advisory Business and Tech Integration' },
+  { place: '3rd', prize: 'Mempool Space Enterprise Plan' },
 ];
 
 export type ScheduleItem = { time: string; what: string; where?: string; kind: 'hack' | 'break' | 'social' | 'talk' };
