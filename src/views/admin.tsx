@@ -43,7 +43,7 @@ export const AdminDashboard: FC<{
           <div class="flex flex-wrap items-center gap-3">
             <b>{i.title}</b>
             <span class="text-sm text-slate-500">
-              {i.members.length}/{i.maxTeamSize} · {i.interested.length} interested
+              {i.members.length}/{i.maxTeamSize}{i.joinable ? '' : ' · closed'}
             </span>
             <form method="post" action="/admin/action" class="ml-auto">
               <input type="hidden" name="action" value="deleteIdea" />
@@ -74,8 +74,7 @@ export const AdminDashboard: FC<{
       <ul class="mt-3 space-y-1 text-sm">
         {participants.map((p) => (
           <li>
-            {p.name} · {p.email} · {p.teamMember?.idea.title ?? 'No team'}
-            {p.openToJoin && !p.teamMember ? ' · open to join' : ''}
+            {p.name} · {p.skills} · {p.teamMember?.idea.title ?? 'No team'}
           </li>
         ))}
       </ul>

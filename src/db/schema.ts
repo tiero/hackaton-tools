@@ -11,13 +11,8 @@ const createdAt = () =>
 export const participant = sqliteTable('Participant', {
   id: id(),
   name: text('name').notNull(),
-  email: text('email').notNull(),
   skills: text('skills').notNull(),
-  interests: text('interests'),
   contact: text('contact'),
-  // Soft signal: open to join other teams even while pitching an idea.
-  openToJoin: integer('openToJoin', { mode: 'boolean' }).notNull().default(true),
-  lookingFor: text('lookingFor'),
   createdAt: createdAt(),
 });
 
@@ -29,11 +24,13 @@ export const idea = sqliteTable('Idea', {
   neededSkills: text('neededSkills').notNull(),
   maxTeamSize: integer('maxTeamSize').notNull().default(4),
   status: text('status').notNull().default('open'), // open | full | frozen
+  // false = pre-formed team, not accepting new members (still public).
+  joinable: integer('joinable', { mode: 'boolean' }).notNull().default(true),
   creatorParticipantId: text('creatorParticipantId').notNull(),
   createdAt: createdAt(),
 });
 
-// Hard commitment: a participant can be a committed member of at most one team.
+// A participant can be a committed member of at most one team.
 export const teamMember = sqliteTable(
   'TeamMember',
   {
@@ -51,24 +48,6 @@ export const teamMember = sqliteTable(
   (t) => ({
     // One participant -> at most one team.
     oneTeamPerParticipant: uniqueIndex('TeamMember_participantId_unique').on(t.participantId),
-  }),
-);
-
-// Soft signal: "I'm open to joining this idea" without committing.
-export const interest = sqliteTable(
-  'Interest',
-  {
-    id: id(),
-    ideaId: text('ideaId')
-      .notNull()
-      .references(() => idea.id, { onDelete: 'cascade' }),
-    participantId: text('participantId')
-      .notNull()
-      .references(() => participant.id, { onDelete: 'cascade' }),
-    createdAt: createdAt(),
-  },
-  (t) => ({
-    uniqInterest: uniqueIndex('Interest_ideaId_participantId_unique').on(t.ideaId, t.participantId),
   }),
 );
 
@@ -97,7 +76,6 @@ export const participantRelations = relations(participant, ({ many, one }) => ({
     fields: [participant.id],
     references: [teamMember.participantId],
   }),
-  interests: many(interest),
   comments: many(comment),
 }));
 
@@ -107,7 +85,6 @@ export const ideaRelations = relations(idea, ({ many, one }) => ({
     references: [participant.id],
   }),
   members: many(teamMember),
-  interested: many(interest),
   comments: many(comment),
 }));
 
@@ -115,14 +92,6 @@ export const teamMemberRelations = relations(teamMember, ({ one }) => ({
   idea: one(idea, { fields: [teamMember.ideaId], references: [idea.id] }),
   participant: one(participant, {
     fields: [teamMember.participantId],
-    references: [participant.id],
-  }),
-}));
-
-export const interestRelations = relations(interest, ({ one }) => ({
-  idea: one(idea, { fields: [interest.ideaId], references: [idea.id] }),
-  participant: one(participant, {
-    fields: [interest.participantId],
     references: [participant.id],
   }),
 }));
@@ -139,12 +108,10 @@ export const schema = {
   participant,
   idea,
   teamMember,
-  interest,
   comment,
   appSetting,
   participantRelations,
   ideaRelations,
   teamMemberRelations,
-  interestRelations,
   commentRelations,
 };
