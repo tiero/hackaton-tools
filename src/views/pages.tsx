@@ -246,24 +246,58 @@ export const NewIdea: FC<{ me?: Participant | null; atMax: boolean }> = ({ me, a
 
 const OwnerPanel: FC<{ idea: IdeaDetailData; isFull: boolean }> = ({ idea, isFull }) => (
   <section class="card border-bitcoin-100 bg-bitcoin-50/40">
-    <h2 class="text-xl font-bold">Owner tools</h2>
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-xl font-bold">Owner tools</h2>
+      <form
+        method="post"
+        action={`/ideas/${idea.id}/delete`}
+        onsubmit="return confirm('Delete this idea and its team? This cannot be undone.')"
+      >
+        <button class="text-sm font-semibold text-red-700 hover:underline">Delete idea</button>
+      </form>
+    </div>
+
     <div class="mt-3 grid gap-4 md:grid-cols-2">
-      <form method="post" action={`/ideas/${idea.id}/members`} class="space-y-2">
+      <details class="rounded-xl border border-slate-200 bg-white p-4">
+        <summary class="cursor-pointer font-semibold">Edit idea &amp; team size</summary>
+        <form method="post" action={`/ideas/${idea.id}/edit`} class="mt-3 space-y-2">
+          <div>
+            <label class="label" for="e-title">Title</label>
+            <input class="input mt-1" id="e-title" name="title" required value={idea.title} />
+          </div>
+          <div>
+            <label class="label" for="e-problem">Problem</label>
+            <textarea class="input mt-1" id="e-problem" name="problem" required rows={2}>{idea.problem}</textarea>
+          </div>
+          <div>
+            <label class="label" for="e-solution">Proposed solution</label>
+            <textarea class="input mt-1" id="e-solution" name="proposedSolution" required rows={2}>{idea.proposedSolution}</textarea>
+          </div>
+          <div>
+            <label class="label" for="e-skills">Needed skills</label>
+            <input class="input mt-1" id="e-skills" name="neededSkills" required value={idea.neededSkills} />
+          </div>
+          <div>
+            <label class="label" for="e-size">Team size (2–6)</label>
+            <input class="input mt-1" id="e-size" name="maxTeamSize" type="number" min={2} max={6} value={String(idea.maxTeamSize)} />
+            <p class="mt-1 text-xs text-slate-500">Currently {idea.members.length} member(s) — can’t go below that.</p>
+          </div>
+          <label class="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="joinable" checked={idea.joinable} class="mt-1" />
+            <span>Open for others to join</span>
+          </label>
+          <button class="btn-primary">Save changes</button>
+        </form>
+      </details>
+
+      <form method="post" action={`/ideas/${idea.id}/members`} class="space-y-2 rounded-xl border border-slate-200 bg-white p-4">
         <h3 class="font-semibold">Add a teammate</h3>
-        <p class="text-sm text-slate-600">For people already on your team. They’re added as records — no sign-up needed.</p>
+        <p class="text-sm text-slate-600">For people already on your team — added as records, no sign-up.</p>
         <input class="input" name="name" required placeholder="Name" />
         <input class="input" name="skills" required placeholder="Skills (e.g. Rust, design)" />
         <input class="input" name="contact" placeholder="Contact (e.g. Telegram @handle)" />
         <input class="input" name="role" required placeholder="Role on the team" />
         <button class="btn-primary" disabled={isFull}>{isFull ? 'Team full' : 'Add teammate'}</button>
-      </form>
-      <form method="post" action={`/ideas/${idea.id}/settings`} class="space-y-2">
-        <h3 class="font-semibold">Team settings</h3>
-        <label class="flex items-start gap-2 text-sm">
-          <input type="checkbox" name="joinable" checked={idea.joinable} class="mt-1" />
-          <span>Open for others to join. Uncheck if your team is already formed.</span>
-        </label>
-        <button class="btn-secondary">Save settings</button>
       </form>
     </div>
   </section>

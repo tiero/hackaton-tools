@@ -302,8 +302,42 @@ app.post('/ideas/:id/members', async (c) => {
   return back(c, `/ideas/${id}`, { ok: 'Teammate added.' });
 });
 
-// Owner toggles whether the team accepts new members.
-app.post('/ideas/:id/settings', async (c) => {
+// Owner edits the idea (fields, team size, joinable).
+app.post('/ideas/:id/edit', async (c) => {
+  const db = getDb(c.env.DB);
+  const me = await getMe(c, db);
+  const id = c.req.param('id');
+  if (!me) return c.redirect('/join');
+  const row = await db.query.idea.findFirst({ where: eq(idea.id, id), with: { members: true } });
+  if (!row) return c.notFound();
+  if (row.creatorParticipantId !== me.id) return back(c, `/ideas/${id}`, { error: 'not-owner' });
+  const form = await c.req.formData();
+  try {
+    const maxTeamSize = intRange(form.get('maxTeamSize'), 'Team size', 2, 6, row.maxTeamSize);
+    if (maxTeamSize < row.members.length) {
+      return back(c, `/ideas/${id}`, { error: `Team size can't be below the ${row.members.length} current members.` });
+    }
+    await db
+      .update(idea)
+      .set({
+        title: required(form.get('title'), 'Idea title', 160),
+        problem: required(form.get('problem'), 'Problem', 2000),
+        proposedSolution: required(form.get('proposedSolution'), 'Proposed solution', 2000),
+        neededSkills: required(form.get('neededSkills'), 'Needed skills', 1000),
+        maxTeamSize,
+        joinable: boolean(form.get('joinable')),
+      })
+      .where(eq(idea.id, id));
+    await refreshIdeaStatus(db, id);
+    return back(c, `/ideas/${id}`, { ok: 'Idea updated.' });
+  } catch (e) {
+    const msg = e instanceof ValidationError ? e.message : 'Could not update the idea.';
+    return back(c, `/ideas/${id}`, { error: msg });
+  }
+});
+
+// Owner deletes the idea (cascades to members + comments).
+app.post('/ideas/:id/delete', async (c) => {
   const db = getDb(c.env.DB);
   const me = await getMe(c, db);
   const id = c.req.param('id');
@@ -311,9 +345,8 @@ app.post('/ideas/:id/settings', async (c) => {
   const row = await db.query.idea.findFirst({ where: eq(idea.id, id) });
   if (!row) return c.notFound();
   if (row.creatorParticipantId !== me.id) return back(c, `/ideas/${id}`, { error: 'not-owner' });
-  const form = await c.req.formData();
-  await db.update(idea).set({ joinable: boolean(form.get('joinable')) }).where(eq(idea.id, id));
-  return back(c, `/ideas/${id}`, { ok: 'Team settings updated.' });
+  await db.delete(idea).where(eq(idea.id, id));
+  return back(c, '/', { ok: 'Idea deleted.' });
 });
 
 app.post('/ideas/:id/comment', async (c) => {
