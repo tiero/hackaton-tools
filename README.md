@@ -1,9 +1,9 @@
 # Plan ₿ Hackathon — team formation app
 
 A tiny team-formation app for the **Plan ₿ Summer School Hackathon** (29–30 June
-2026, Lugano). Participants can **pitch an idea** to lead a team *and* signal
-they're **open to join** other ideas — so nobody is stuck choosing between
-leading and joining before kickoff.
+2026, Lugano). Participants **pitch an idea** to lead a team, or **commit to join**
+an existing one (one team each). Teams already matched offline can be registered as
+**pre-formed** — public on the board, but not accepting new members.
 
 Built to be **trivial to deploy on Cloudflare**: it's a single
 [Hono](https://hono.dev) Worker rendering server-side HTML, backed by
@@ -20,16 +20,18 @@ DB engine — `wrangler deploy` and you're live.
 
 ## Features
 
-- Idea board (`/`) with team size, needed skills, status (open/full/frozen) and
-  an "interested" count.
-- People directory (`/people`) split into *open to join*, *committed*, and
-  *not looking*.
-- Register / edit profile (`/join`, `/me`) — identity is a cookie-stored
-  participant id, no passwords.
-- Pitch an idea (`/ideas/new`) — capped at 8 teams; pitcher becomes idea owner.
-- Idea detail (`/ideas/:id`) — commit to a team (one team max), leave, express
-  soft *interest* in many ideas, comment.
-- Program page (`/about`) — schedule, judging, prizes, mentors.
+- Idea board (`/`) with team size, needed skills, status (open/full/frozen), and
+  a *Closed / pre-formed* marker for teams not taking new members.
+- People directory (`/people`) — everyone registered, split into *on a team* and
+  *not on a team yet*.
+- Register / edit profile (`/join`, `/me`) — name, skills, contact; identity is a
+  cookie-stored participant id, no passwords.
+- Pitch an idea (`/ideas/new`) — capped at 8 teams; pitcher becomes owner and can
+  mark the team *not joinable* (pre-formed).
+- Idea detail (`/ideas/:id`) — commit to a team (one team max) or leave. Owner
+  tools: edit the idea, set team size, add already-matched teammates by hand,
+  toggle joinable, and delete the idea.
+- Program page (`/about`) — schedule, judging, prizes, mentors, judges, team rules.
 - Admin (`/admin`, password via `ADMIN_PASSWORD`) — freeze/unfreeze formation,
   delete ideas, remove members, export teams & participants as CSV.
 

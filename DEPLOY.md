@@ -97,6 +97,6 @@ Option A commands. **Never commit the token.**
   under `.wrangler/`; `:remote` hit the real D1. Apply the migration to remote
   once (step 2).
 - **Schema changes:** add a new `migrations/000N_*.sql` and run
-  `pnpm run db:apply:remote` (D1 has no Prisma-style migrate; it's plain SQL).
+  `pnpm run db:apply:remote` (D1 migrations are plain SQL).
 - **Secrets:** `ADMIN_PASSWORD` is the only required secret. Set it for the
   deployed Worker; `.dev.vars` only covers local dev.
