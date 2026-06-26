@@ -98,5 +98,9 @@ Option A commands. **Never commit the token.**
   once (step 2).
 - **Schema changes:** add a new `migrations/000N_*.sql` and run
   `pnpm run db:apply:remote` (D1 migrations are plain SQL).
+- **Reset to zero:** to clear all data (e.g. remove test rows before opening
+  registration) run `pnpm run db:reset:remote` — it drops every table and
+  re-applies the schema, leaving an empty DB (no seed). Destructive; `--remote`
+  asks you to confirm. Local equivalent: `pnpm run db:reset:local`.
 - **Secrets:** `ADMIN_PASSWORD` is the only required secret. Set it for the
   deployed Worker; `.dev.vars` only covers local dev.

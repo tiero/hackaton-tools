@@ -82,4 +82,10 @@ This is a lightweight tool for ~30 people over two days, not production software
 | `pnpm run typecheck` | `tsc --noEmit` |
 | `pnpm run db:apply:local` / `:remote` | Apply `migrations/0001_init.sql` |
 | `pnpm run db:seed:local` / `:remote` | Apply `seed.sql` |
-| `pnpm run db:reset:local` | Drop + recreate the local D1 |
+| `pnpm run db:reset:local` | Drop + recreate the local D1 (empty) |
+| `pnpm run db:reset:remote` | Drop + recreate the **production** D1 — wipes all data |
+
+> **Start the production DB from zero** (e.g. to clear test data before opening
+> registration): `pnpm run db:reset:remote`. It drops every table and re-applies
+> the schema — no seed, so the board is empty. Destructive; `--remote` will ask
+> you to confirm.
