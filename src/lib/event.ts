@@ -7,10 +7,6 @@ export const EVENT = {
   location: 'P. Gregory Warden Student Center, Franklin University, Lugano',
   format: '8 teams · single track · ~30 hours, overnight',
   theme: 'Bitcoin infrastructure for the next billion — with a Plan ₿ mindset',
-  themeBlurb:
-    'Build infrastructure that brings Bitcoin to people who don’t have it yet, and make it survive hostile conditions. Wallets, privacy tooling, L2 interfaces, identity primitives, onboarding flows, education tools. Protocol-level thinking, not UI wrappers on custodial APIs.',
-  hardGate:
-    'Non-custodial is a hard gate. If your project holds user keys, it’s disqualified. Self-sovereign or nothing — the user controls their money at every step.',
   maxTeams: 8,
   defaultTeamSize: 4,
 };
