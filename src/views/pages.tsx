@@ -29,12 +29,12 @@ export function flashFrom(query: { error?: string; ok?: string }): { kind: 'erro
 
 export const Home: FC<{ ideas: IdeaCardData[] }> = ({ ideas }) => (
   <div class="space-y-10">
-    <section class="rounded-3xl bg-gradient-to-br from-bitcoin-600 to-amber-500 p-8 text-white">
+    <section class="rounded-3xl bg-gradient-to-br from-bitcoin-600 to-amber-500 p-6 text-white sm:p-8">
       <p class="text-sm font-semibold uppercase tracking-wide text-orange-100">
         {EVENT.dates} · Lugano
       </p>
       <h1 class="mt-2 text-3xl font-bold sm:text-4xl">{EVENT.name}</h1>
-      <div class="mt-6 flex flex-wrap gap-3">
+      <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <a class="btn bg-white text-bitcoin-700 hover:bg-orange-50" href="/join">Register / Edit My Profile</a>
         <a class="btn bg-slate-900 hover:bg-slate-800" href="/ideas/new">Pitch an Idea</a>
         <a class="btn-secondary bg-transparent text-white hover:bg-white/10" href="/people">Find teammates</a>

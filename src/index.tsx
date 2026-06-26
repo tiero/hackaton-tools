@@ -6,6 +6,7 @@ import { getDb, type DB } from './db';
 import { participant, idea, teamMember, comment } from './db/schema';
 import { isFrozen, setFrozen, refreshIdeaStatus, refreshAllIdeas } from './lib/state';
 import { required, optional, intRange, boolean, newId, ValidationError } from './lib/validation';
+import { adminToken, checkPassword, checkAdminCookie } from './lib/auth';
 import type { Participant } from './lib/types';
 import { EVENT } from './lib/event';
 import { Layout, render } from './views/layout';
@@ -26,9 +27,13 @@ async function getMe(c: any, db: DB): Promise<Participant | null> {
   return me ?? null;
 }
 
-function isAdmin(c: any): boolean {
-  const pw = c.env.ADMIN_PASSWORD;
-  return Boolean(pw) && getCookie(c, ADMIN_COOKIE) === pw;
+async function isAdmin(c: any): Promise<boolean> {
+  return checkAdminCookie(getCookie(c, ADMIN_COOKIE), c.env.ADMIN_PASSWORD);
+}
+
+// Mark cookies Secure when served over HTTPS (skip on http://localhost dev).
+function secureCookies(c: any): boolean {
+  return new URL(c.req.url).protocol === 'https:';
 }
 
 // Redirect helper that carries a flash message in the query string.
@@ -142,7 +147,7 @@ app.post('/profile', async (c) => {
     }
     const id = newId();
     await db.insert(participant).values({ id, ...data });
-    setCookie(c, PID_COOKIE, id, { httpOnly: true, sameSite: 'Lax', path: '/', maxAge: YEAR });
+    setCookie(c, PID_COOKIE, id, { httpOnly: true, secure: secureCookies(c), sameSite: 'Lax', path: '/', maxAge: YEAR });
     return back(c, '/me', { ok: 'Welcome! Your profile is saved.' });
   } catch (e) {
     const msg = e instanceof ValidationError ? e.message : 'Could not save profile.';
@@ -335,7 +340,7 @@ app.post('/ideas/:id/comment', async (c) => {
 
 app.get('/admin', async (c) => {
   const db = getDb(c.env.DB);
-  if (!isAdmin(c)) {
+  if (!(await isAdmin(c))) {
     return c.html(
       render(
         <Layout title="Admin">
@@ -368,10 +373,16 @@ app.get('/admin', async (c) => {
 app.post('/admin/login', async (c) => {
   const form = await c.req.formData();
   const password = String(form.get('password') ?? '');
-  if (!c.env.ADMIN_PASSWORD || password !== c.env.ADMIN_PASSWORD) {
+  if (!(await checkPassword(password, c.env.ADMIN_PASSWORD))) {
     return c.redirect('/admin?error=1');
   }
-  setCookie(c, ADMIN_COOKIE, c.env.ADMIN_PASSWORD, { httpOnly: true, sameSite: 'Lax', path: '/', maxAge: 60 * 60 * 8 });
+  setCookie(c, ADMIN_COOKIE, await adminToken(c.env.ADMIN_PASSWORD!), {
+    httpOnly: true,
+    secure: secureCookies(c),
+    sameSite: 'Strict',
+    path: '/',
+    maxAge: 60 * 60 * 8,
+  });
   return c.redirect('/admin');
 });
 
@@ -382,7 +393,7 @@ app.post('/admin/logout', (c) => {
 
 app.post('/admin/action', async (c) => {
   const db = getDb(c.env.DB);
-  if (!isAdmin(c)) return c.redirect('/admin');
+  if (!(await isAdmin(c))) return c.redirect('/admin');
   const form = await c.req.formData();
   const action = String(form.get('action'));
   if (action === 'freeze' || action === 'unfreeze') {
@@ -403,12 +414,18 @@ app.post('/admin/action', async (c) => {
 
 // ---------------- CSV exports ----------------
 
-const esc = (v: unknown) => `"${String(v ?? '').replaceAll('"', '""')}"`;
+const esc = (v: unknown) => {
+  let s = String(v ?? '');
+  // Neutralize spreadsheet formula injection: a leading =, +, -, @, tab or CR
+  // can execute as a formula when the CSV is opened in Excel/Sheets.
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return `"${s.replaceAll('"', '""')}"`;
+};
 const csv = (rows: unknown[][]) => rows.map((r) => r.map(esc).join(',')).join('\n');
 
 app.get('/admin/export/teams.csv', async (c) => {
   const db = getDb(c.env.DB);
-  if (!isAdmin(c)) return c.text('Unauthorized', 401);
+  if (!(await isAdmin(c))) return c.text('Unauthorized', 401);
   const ideas = await db.query.idea.findMany({ with: { members: { with: { participant: true } } } });
   const rows: unknown[][] = [
     ['idea title', 'problem', 'needed skills', 'max team size', 'member name', 'member skills', 'member contact', 'team role', 'motivation'],
@@ -427,7 +444,7 @@ app.get('/admin/export/teams.csv', async (c) => {
 
 app.get('/admin/export/participants.csv', async (c) => {
   const db = getDb(c.env.DB);
-  if (!isAdmin(c)) return c.text('Unauthorized', 401);
+  if (!(await isAdmin(c))) return c.text('Unauthorized', 401);
   const people = await db.query.participant.findMany({
     with: { teamMember: { with: { idea: true } } },
   });

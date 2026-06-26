@@ -36,12 +36,14 @@ export const Layout: FC<LayoutProps> = ({ children, title, me, active, flash }) 
       </head>
       <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <header class="border-b border-slate-200 bg-white">
-          <div class="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+          <div class="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
             <a href="/" class="flex items-center gap-2 font-bold">
-              <span class="grid h-7 w-7 place-items-center rounded-lg bg-bitcoin-500 text-white">₿</span>
-              <span class="hidden sm:inline">Plan ₿ Hackathon</span>
+              <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-bitcoin-500 text-white">₿</span>
+              <span>Plan ₿ Hackathon</span>
             </a>
-            <nav class="flex flex-1 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+
+            {/* Desktop nav */}
+            <nav class="hidden items-center gap-5 text-sm md:flex">
               {navItems.map((n) => (
                 <a
                   href={n.href}
@@ -50,8 +52,39 @@ export const Layout: FC<LayoutProps> = ({ children, title, me, active, flash }) 
                   {n.label}
                 </a>
               ))}
+              <span class="text-slate-300">|</span>
+              {me ? (
+                <span class="text-slate-500">Hi, {me.name.split(' ')[0]}</span>
+              ) : (
+                <a class="font-semibold text-bitcoin-700 hover:underline" href="/join">Register</a>
+              )}
             </nav>
-            <div class="text-sm text-slate-500">{me ? <span>Hi, {me.name.split(' ')[0]}</span> : <a class="hover:text-bitcoin-700" href="/join">Register</a>}</div>
+
+            {/* Mobile menu — CSS-only disclosure, no JS */}
+            <details class="relative md:hidden">
+              <summary class="flex cursor-pointer list-none items-center rounded-lg border border-slate-300 p-2 text-slate-700 [&::-webkit-details-marker]:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span class="sr-only">Menu</span>
+              </summary>
+              <nav class="absolute right-0 z-30 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 text-sm shadow-lg">
+                {navItems.map((n) => (
+                  <a
+                    href={n.href}
+                    class={`block rounded-lg px-3 py-2.5 hover:bg-slate-50 ${active === n.key ? 'font-semibold text-bitcoin-700' : 'text-slate-700'}`}
+                  >
+                    {n.label}
+                  </a>
+                ))}
+                <div class="my-1 border-t border-slate-100" />
+                {me ? (
+                  <span class="block px-3 py-2.5 text-slate-500">Hi, {me.name.split(' ')[0]}</span>
+                ) : (
+                  <a class="block rounded-lg px-3 py-2.5 font-semibold text-bitcoin-700 hover:bg-slate-50" href="/join">Register</a>
+                )}
+              </nav>
+            </details>
           </div>
         </header>
 
