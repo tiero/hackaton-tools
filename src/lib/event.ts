@@ -54,10 +54,10 @@ export const SCHEDULE: { day: string; items: ScheduleItem[] }[] = [
   {
     day: 'Monday 29 June',
     items: [
-      { time: '09:00', what: 'Kickoff — welcome & greetings (Tiero), rules, non-custodial hard gate, effective squads announced', where: 'Warden Student Center', kind: 'talk' },
-      { time: '10:00', what: 'Hacking begins', where: 'Warden Student Center', kind: 'hack' },
+      { time: '09:00', what: 'Kickoff — welcome & greetings (Tiero), rules, non-custodial hard gate, team confirmation', where: 'Warden Student Center', kind: 'talk' },
+      { time: '10:00', what: 'Hacking begins — heads down; mentors on hand to help', where: 'Warden Student Center', kind: 'hack' },
       { time: '13:00–14:00', what: 'Lunch on your own (room stays open)', where: 'Franklin Grotto', kind: 'break' },
-      { time: '14:00', what: 'Hacking continues — afternoon sprint', where: 'Warden Student Center', kind: 'hack' },
+      { time: '14:00', what: 'Hacking continues — afternoon sprint, mentors roaming to help', where: 'Warden Student Center', kind: 'hack' },
       { time: '~19:00', what: 'Dinner on your own', where: 'Franklin Grotto', kind: 'social' },
       { time: '~20:00', what: 'Overnight hacking — room open all night, ≥1 mentor present', where: 'Warden Student Center', kind: 'hack' },
     ],
@@ -65,12 +65,12 @@ export const SCHEDULE: { day: string; items: ScheduleItem[] }[] = [
   {
     day: 'Tuesday 30 June',
     items: [
-      { time: '09:00', what: 'Morning push — final hacking hours', where: 'Warden Student Center', kind: 'hack' },
-      { time: '12:00', what: 'Hacking ends — hard stop, prep presentations', where: 'Warden Student Center', kind: 'hack' },
+      { time: '09:00', what: 'Morning push — final hacking hours, mentors on hand', where: 'Warden Student Center', kind: 'hack' },
+      { time: '12:00', what: 'Hacking ends — hard stop, prep your pitch', where: 'Warden Student Center', kind: 'hack' },
       { time: '12:40–14:00', what: 'Lunch on your own (room open for prep)', where: 'Franklin Grotto', kind: 'break' },
-      { time: '14:15', what: 'Presentations begin — 8 teams × 12 min (7 demo + 5 Q&A)', where: 'Classroom', kind: 'talk' },
+      { time: '14:15', what: 'Pitches & feedback — 8 teams × 12 min (7 demo + 5 Q&A)', where: 'Classroom', kind: 'talk' },
       { time: '16:00', what: 'Jury deliberation (private)', kind: 'talk' },
-      { time: '16:30', what: 'Awards ceremony', where: 'Classroom', kind: 'social' },
+      { time: '16:30', what: 'Awards & closing feedback', where: 'Classroom', kind: 'social' },
       { time: '~19:00', what: 'Dinner at Lugano Dante', kind: 'social' },
     ],
   },
