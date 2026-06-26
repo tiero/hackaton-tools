@@ -46,14 +46,16 @@ export type ScheduleItem = { time: string; what: string; where?: string; kind: '
 
 export const SCHEDULE: { day: string; items: ScheduleItem[] }[] = [
   {
+    day: 'Sunday 28 June (remote)',
+    items: [
+      { time: 'Online', what: 'Team formation on your own — pitch ideas and form your squad on this site', kind: 'talk' },
+    ],
+  },
+  {
     day: 'Monday 29 June',
     items: [
-      { time: '10:00', what: 'Kickoff — welcome, rules, non-custodial hard gate, challenge brief', where: 'Warden Student Center', kind: 'hack' },
-      { time: '10:10', what: 'Idea pitches — anyone can pitch, 60s each', where: 'Warden Student Center', kind: 'talk' },
-      { time: '10:35', what: 'Voting + team formation — top ~8 ideas become projects', where: 'Warden Student Center', kind: 'talk' },
-      { time: '10:45', what: 'Efrat — “How to pitch like it matters”', where: 'Warden Student Center', kind: 'talk' },
-      { time: '11:15', what: 'Technical session — “Building for the next billion”', where: 'Warden Student Center', kind: 'talk' },
-      { time: '11:45', what: 'Hacking begins', where: 'Warden Student Center', kind: 'hack' },
+      { time: '09:00', what: 'Kickoff — welcome & greetings (Tiero), rules, non-custodial hard gate, effective squads announced', where: 'Warden Student Center', kind: 'talk' },
+      { time: '10:00', what: 'Hacking begins', where: 'Warden Student Center', kind: 'hack' },
       { time: '13:00–14:00', what: 'Lunch on your own (room stays open)', where: 'Franklin Grotto', kind: 'break' },
       { time: '14:00', what: 'Hacking continues — afternoon sprint', where: 'Warden Student Center', kind: 'hack' },
       { time: '~19:00', what: 'Dinner on your own', where: 'Franklin Grotto', kind: 'social' },
