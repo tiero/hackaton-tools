@@ -228,8 +228,8 @@ export const NewIdea: FC<{ me?: Participant | null; atMax: boolean }> = ({ me, a
         <input class="input mt-1" id="neededSkills" name="neededSkills" required placeholder="Rust, Lightning, mobile, design..." />
       </div>
       <div>
-        <label class="label" for="maxTeamSize">Team size (2–6)</label>
-        <input class="input mt-1" id="maxTeamSize" name="maxTeamSize" type="number" min={2} max={6} value={String(EVENT.defaultTeamSize)} />
+        <label class="label" for="maxTeamSize">Team size ({EVENT.minTeamSize}–{EVENT.maxTeamSize})</label>
+        <input class="input mt-1" id="maxTeamSize" name="maxTeamSize" type="number" min={EVENT.minTeamSize} max={EVENT.maxTeamSize} value={String(EVENT.defaultTeamSize)} />
       </div>
       <label class="flex items-start gap-2 text-sm">
         <input type="checkbox" name="joinable" checked class="mt-1" />
@@ -279,8 +279,8 @@ const OwnerPanel: FC<{ idea: IdeaDetailData; isFull: boolean }> = ({ idea, isFul
             <input class="input mt-1" id="e-skills" name="neededSkills" required value={idea.neededSkills} />
           </div>
           <div>
-            <label class="label" for="e-size">Team size (2–6)</label>
-            <input class="input mt-1" id="e-size" name="maxTeamSize" type="number" min={2} max={6} value={String(idea.maxTeamSize)} />
+            <label class="label" for="e-size">Team size ({EVENT.minTeamSize}–{EVENT.maxTeamSize})</label>
+            <input class="input mt-1" id="e-size" name="maxTeamSize" type="number" min={EVENT.minTeamSize} max={EVENT.maxTeamSize} value={String(idea.maxTeamSize)} />
             <p class="mt-1 text-xs text-slate-500">Currently {idea.members.length} member(s) — can’t go below that.</p>
           </div>
           <label class="flex items-start gap-2 text-sm">

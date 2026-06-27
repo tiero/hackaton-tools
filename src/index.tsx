@@ -186,7 +186,7 @@ app.post('/ideas', async (c) => {
       problem: required(form.get('problem'), 'Problem', 2000),
       proposedSolution: required(form.get('proposedSolution'), 'Proposed solution', 2000),
       neededSkills: required(form.get('neededSkills'), 'Needed skills', 1000),
-      maxTeamSize: intRange(form.get('maxTeamSize'), 'Max team size', 2, 6, EVENT.defaultTeamSize),
+      maxTeamSize: intRange(form.get('maxTeamSize'), 'Team size', EVENT.minTeamSize, EVENT.maxTeamSize, EVENT.defaultTeamSize),
       joinable: boolean(form.get('joinable')),
       creatorParticipantId: me.id,
     });
@@ -316,7 +316,7 @@ app.post('/ideas/:id/edit', async (c) => {
   if (await isFrozen(db)) return back(c, `/ideas/${id}`, { error: 'frozen' });
   const form = await c.req.formData();
   try {
-    const maxTeamSize = intRange(form.get('maxTeamSize'), 'Team size', 2, 6, row.maxTeamSize);
+    const maxTeamSize = intRange(form.get('maxTeamSize'), 'Team size', EVENT.minTeamSize, EVENT.maxTeamSize, row.maxTeamSize);
     if (maxTeamSize < row.members.length) {
       return back(c, `/ideas/${id}`, { error: `Team size can't be below the ${row.members.length} current members.` });
     }

@@ -30,7 +30,7 @@ INSERT OR IGNORE INTO Idea (id, title, problem, proposedSolution, neededSkills, 
    'Self-hosted Lightning nodes go offline and lose funds to outdated channel states.',
    'A lightweight watchtower + alerting setup that anyone can run alongside their node.',
    'Rust, infra, networking',
-   3, 'open', 0, 'p_aria');
+   4, 'open', 0, 'p_aria');
 
 INSERT OR IGNORE INTO TeamMember (id, ideaId, participantId, role, motivation) VALUES
   ('tm_satoshi', 'i_seedkit',   'p_satoshi', 'Idea owner', 'Proposed this idea.'),

@@ -8,7 +8,9 @@ export const EVENT = {
   format: '8 teams · single track · ~30 hours, overnight',
   theme: 'Bitcoin infrastructure for the next billion — with a Plan ₿ mindset',
   maxTeams: 8,
-  defaultTeamSize: 4,
+  minTeamSize: 4,
+  maxTeamSize: 5,
+  defaultTeamSize: 5,
 };
 
 export const JUDGING = [
@@ -30,9 +32,9 @@ export const MENTORS: { name: string; role: string }[] = [
 export const JUDGES = ['Tiero', 'Giacomo', 'Anna', 'Efrat'];
 
 export const TEAM_RULES = [
-  'Minimum 3 students per team',
+  'Minimum 4 students per team',
   'At least one technical and one business profile required',
-  'Maximum 4 students per team',
+  'Maximum 5 students per team',
   'No recycling of existing projects',
 ];
 
