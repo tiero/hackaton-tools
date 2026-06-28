@@ -45,7 +45,12 @@ export const AdminDashboard: FC<{
             <span class="text-sm text-slate-500">
               {i.members.length}/{i.maxTeamSize}{i.joinable ? '' : ' · closed'}
             </span>
-            <form method="post" action="/admin/action" class="ml-auto">
+            <form
+              method="post"
+              action="/admin/action"
+              class="ml-auto"
+              onsubmit="return confirm('Delete this idea and its whole team? This cannot be undone.')"
+            >
               <input type="hidden" name="action" value="deleteIdea" />
               <input type="hidden" name="ideaId" value={i.id} />
               <button class="text-sm text-red-700 hover:underline">Delete idea</button>
@@ -55,7 +60,12 @@ export const AdminDashboard: FC<{
             {i.members.map((m) => (
               <li class="text-sm">
                 {m.participant.name} — {m.role}
-                <form method="post" action="/admin/action" class="inline">
+                <form
+                  method="post"
+                  action="/admin/action"
+                  class="inline"
+                  onsubmit="return confirm('Remove this member from the team?')"
+                >
                   <input type="hidden" name="action" value="removeMember" />
                   <input type="hidden" name="memberId" value={m.id} />
                   <button class="ml-2 text-red-700 hover:underline">Remove</button>
