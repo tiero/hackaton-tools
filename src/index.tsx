@@ -36,6 +36,13 @@ function secureCookies(c: any): boolean {
   return new URL(c.req.url).protocol === 'https:';
 }
 
+// Number of "effective" teams — ideas that have reached the minimum team size.
+// The maxTeams cap is enforced on these, not on the total number of ideas.
+async function effectiveTeamCount(db: DB): Promise<number> {
+  const ideas = await db.query.idea.findMany({ with: { members: true } });
+  return ideas.filter((i) => i.members.length >= EVENT.minTeamSize).length;
+}
+
 // Redirect helper that carries a flash message in the query string.
 function back(c: any, path: string, flash?: { error?: string; ok?: string }) {
   const qs = flash?.error
@@ -160,11 +167,10 @@ app.post('/profile', async (c) => {
 app.get('/ideas/new', async (c) => {
   const db = getDb(c.env.DB);
   const me = await getMe(c, db);
-  const count = (await db.select({ id: idea.id }).from(idea)).length;
   return c.html(
     render(
       <Layout title="Pitch an idea" active="propose" me={me} flash={flashFrom(c.req.query())}>
-        <NewIdea me={me} atMax={count >= EVENT.maxTeams} />
+        <NewIdea me={me} />
       </Layout>,
     ),
   );
@@ -175,8 +181,13 @@ app.post('/ideas', async (c) => {
   const me = await getMe(c, db);
   if (!me) return back(c, '/ideas/new', { error: 'need-profile' });
   if (await isFrozen(db)) return back(c, '/ideas/new', { error: 'frozen' });
-  const count = (await db.select({ id: idea.id }).from(idea)).length;
-  if (count >= EVENT.maxTeams) return back(c, '/ideas/new', { error: 'max' });
+  // One team per person: if you're already on a team, you can't pitch (which would
+  // make you the owner/first member of another). Checked before inserting so we
+  // never create an orphan idea.
+  const onTeam = await db.query.teamMember.findFirst({ where: eq(teamMember.participantId, me.id) });
+  if (onTeam) return back(c, '/ideas/new', { error: 'pitch-on-team' });
+  // No cap on how many ideas can be proposed — the 8-team limit is enforced on
+  // teams that reach the minimum size (see joinTeam / add-member).
   const form = await c.req.formData();
   try {
     const id = newId();
@@ -238,6 +249,11 @@ app.post('/ideas/:id/join', async (c) => {
   if (!row) return c.notFound();
   if (!row.joinable) return back(c, `/ideas/${id}`, { error: 'closed' });
   if (row.members.length >= row.maxTeamSize) return back(c, `/ideas/${id}`, { error: 'full' });
+  // If this join makes the idea reach the minimum size, it becomes the Nth team —
+  // cap that at EVENT.maxTeams.
+  if (row.members.length + 1 === EVENT.minTeamSize && (await effectiveTeamCount(db)) >= EVENT.maxTeams) {
+    return back(c, `/ideas/${id}`, { error: 'max-teams' });
+  }
   const form = await c.req.formData();
   try {
     await db.insert(teamMember).values({
@@ -280,6 +296,9 @@ app.post('/ideas/:id/members', async (c) => {
   if (row.creatorParticipantId !== me.id) return back(c, `/ideas/${id}`, { error: 'not-owner' });
   if (await isFrozen(db)) return back(c, `/ideas/${id}`, { error: 'frozen' });
   if (row.members.length >= row.maxTeamSize) return back(c, `/ideas/${id}`, { error: 'full' });
+  if (row.members.length + 1 === EVENT.minTeamSize && (await effectiveTeamCount(db)) >= EVENT.maxTeams) {
+    return back(c, `/ideas/${id}`, { error: 'max-teams' });
+  }
   const form = await c.req.formData();
   try {
     const pid = newId();

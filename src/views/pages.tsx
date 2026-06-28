@@ -12,8 +12,9 @@ const errorText: Record<string, string> = {
   frozen: 'Team formation is frozen by the organizers.',
   full: 'This team is already full.',
   'already-on-team': "You're already committed to a team. Leave it first to join another.",
-  max: `The maximum of ${EVENT.maxTeams} teams has been reached. Join an existing idea instead.`,
+  'max-teams': `All ${EVENT.maxTeams} team slots are taken (teams that reached the minimum size). Join one of those instead.`,
   'need-profile': 'Register a profile first, then you can pitch or join.',
+  'pitch-on-team': 'You’re already on a team — leave it (or delete your idea) before pitching a new one.',
   closed: 'This team is already formed and not accepting new members.',
   'not-owner': 'Only the idea owner can do that.',
   'owner-cant-leave': 'As the idea owner you can’t leave — delete the idea instead (Owner tools).',
@@ -48,9 +49,12 @@ export const Home: FC<{ ideas: IdeaCardData[] }> = ({ ideas }) => (
 
     <section>
       <div class="flex items-end justify-between">
-        <h2 class="text-2xl font-bold">
-          Ideas ({ideas.length}/{EVENT.maxTeams})
-        </h2>
+        <div>
+          <h2 class="text-2xl font-bold">Ideas ({ideas.length})</h2>
+          <p class="text-sm text-slate-600">
+            {ideas.filter((i) => i.members.length >= EVENT.minTeamSize).length}/{EVENT.maxTeams} teams have reached the minimum ({EVENT.minTeamSize}+ members). Propose as many ideas as you like.
+          </p>
+        </div>
         <a class="text-sm font-semibold text-bitcoin-700 hover:underline" href="/ideas/new">+ Pitch an idea</a>
       </div>
       <div class="mt-4 grid gap-4 md:grid-cols-2">
@@ -69,7 +73,7 @@ export const Home: FC<{ ideas: IdeaCardData[] }> = ({ ideas }) => (
               <p class="mt-3 text-sm"><b>Needs:</b> {idea.neededSkills}</p>
               <p class="mt-1 text-sm text-slate-600">
                 <b>Team:</b> {idea.members.length}/{idea.maxTeamSize}
-                {isFull ? ' · full' : ''}
+                {isFull ? ' · full' : idea.members.length >= EVENT.minTeamSize ? ' · team ✓' : ''}
                 {!idea.joinable ? ' · pre-formed' : ''}
               </p>
               <p class="mt-1 text-sm text-slate-500">
@@ -186,24 +190,13 @@ export const Me: FC<{ me: Participant; team: { idea: { id: string; title: string
 
 // ---------- New idea ----------
 
-export const NewIdea: FC<{ me?: Participant | null; atMax: boolean }> = ({ me, atMax }) => {
+export const NewIdea: FC<{ me?: Participant | null }> = ({ me }) => {
   if (!me) {
     return (
       <div class="card max-w-2xl">
         <h1 class="text-2xl font-bold">Pitch an idea</h1>
         <p class="mt-2 text-slate-600">You need a profile before pitching. It only takes a moment.</p>
         <a class="btn-primary mt-4" href="/join">Register first</a>
-      </div>
-    );
-  }
-  if (atMax) {
-    return (
-      <div class="card max-w-2xl">
-        <h1 class="text-2xl font-bold">Maximum teams reached</h1>
-        <p class="mt-2 text-slate-600">
-          All {EVENT.maxTeams} team slots are taken. Browse the board and join an existing idea instead.
-        </p>
-        <a class="btn-primary mt-4" href="/">Back to the board</a>
       </div>
     );
   }
