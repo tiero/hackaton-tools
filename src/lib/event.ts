@@ -14,7 +14,7 @@ export const EVENT = {
 };
 
 export const JUDGING = [
-  { criterion: 'Bitcoin relevance', weight: '30%', note: 'Protocol-level thinking. Uses Bitcoin’s properties directly. Self-sovereign by design.' },
+  { criterion: 'Bitcoin relevance', weight: '30%', note: 'Protocol-level thinking. Uses Bitcoin’s properties directly. Non-custodial by design.' },
   { criterion: 'Presentation quality', weight: '25%', note: 'Clear what was built, why, and what’s next. Did the pitch land?' },
   { criterion: 'Technical execution', weight: '20%', note: 'Working demo over slideware. Non-custodial architecture is real, not claimed.' },
   { criterion: 'Innovation / ambition', weight: '15%', note: 'Scopes for impact under constraint. Builds for the hostile-regime scenario.' },
@@ -22,14 +22,13 @@ export const JUDGING = [
 ];
 
 export const MENTORS: { name: string; role: string }[] = [
-  { name: 'Raheem', role: 'Legal' },
   { name: 'Mir', role: 'Communication' },
   { name: 'Orange', role: 'Tech' },
   { name: 'JW', role: 'Finance' },
   { name: 'Kevin', role: 'Tech' },
 ];
 
-export const JUDGES = ['Tiero', 'Giacomo', 'Anna', 'Efrat'];
+export const JUDGES = ['Tiero', 'Giacomo', 'Anna', 'Efrat', 'Rahim — Professor of Entrepreneurship'];
 
 export const TEAM_RULES = [
   'Minimum 4 students per team',
