@@ -22,13 +22,14 @@ export const JUDGING = [
 ];
 
 export const MENTORS: { name: string; role: string }[] = [
+  { name: 'Rahim', role: 'Professor of Entrepreneurship' },
   { name: 'Mir', role: 'Communication' },
   { name: 'Orange', role: 'Tech' },
   { name: 'JW', role: 'Finance' },
   { name: 'Kevin', role: 'Tech' },
 ];
 
-export const JUDGES = ['Tiero', 'Giacomo', 'Anna', 'Efrat', 'Rahim — Professor of Entrepreneurship'];
+export const JUDGES = ['Tiero', 'Giacomo', 'Anna', 'Efrat'];
 
 export const TEAM_RULES = [
   'Minimum 4 students per team',
